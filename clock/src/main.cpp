@@ -1,24 +1,26 @@
-/**
- * Blink
- *
- * Turns on an LED on for one second,
- * then off for one second, repeatedly.
- */
 #include "Arduino.h"
 #include <Wire.h>
 #include <DS1307.h>
-// Set LED_BUILTIN if it is not defined by Arduino framework
-// #define LED_BUILTIN 13
+#include <U8x8lib.h>
 
 DS1307 clock;//define a object of DS1307 class
+U8X8_SSD1306_128X64_NONAME_HW_I2C u8x8(/* reset=*/ U8X8_PIN_NONE);
 
 
 void setup()
 {
   Serial.begin(9600);
   clock.begin();
-  // initialize LED digital pin as an output.
-  pinMode(LED_BUILTIN, OUTPUT);
+  u8x8.begin();
+  u8x8.setPowerSave(0);
+  u8x8.setFlipMode(1);
+}
+
+void displayTimeU8x8(String theTime)
+{
+    u8x8.setFont(u8x8_font_chroma48medium8_r);
+    u8x8.setCursor(0, 33);
+    u8x8.print(theTime);
 }
 
 void loop()
@@ -33,6 +35,9 @@ void loop()
     if (clock.second < 10)
       theTime += "0";
     theTime += String(clock.second,DEC);
-    Serial.println(theTime);
+    //Serial.println(theTime);
+    displayTimeU8x8(theTime); 
 
 }
+
+
