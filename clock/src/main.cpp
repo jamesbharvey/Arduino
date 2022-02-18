@@ -4,16 +4,27 @@
 
 DS1307 clock; // define a object of DS1307 class
 U8G2_SSD1306_128X64_NONAME_1_HW_I2C u8g2(U8G2_R2, /* reset=*/U8X8_PIN_NONE);
+char led = 4;
+char buzzer = 5;
+char button = 6;
+char rotary = A0;
+int alarmHour = 8;
+int alarmMinute = 0;
 
-#define LCDWidth                        u8g2.getDisplayWidth()
-#define ALIGN_CENTER(t)                 ((LCDWidth - (u8g2.getUTF8Width(t.c_str()))) / 2)
-#define ALIGN_RIGHT(t)                  (LCDWidth -  u8g2.getUTF8Width(t.c_str()))
-#define ALIGN_LEFT                      0
+#define LCDWidth u8g2.getDisplayWidth()
+#define ALIGN_CENTER(t) ((LCDWidth - (u8g2.getUTF8Width(t.c_str()))) / 2)
+#define ALIGN_RIGHT(t) (LCDWidth - u8g2.getUTF8Width(t.c_str()))
+#define ALIGN_LEFT 0
 
 void setup()
 {
   clock.begin();
   u8g2.begin();
+  pinMode(rotary, INPUT);
+  pinMode(button, INPUT);
+  pinMode(led, OUTPUT);
+  pinMode(buzzer, OUTPUT);
+  digitalWrite(buzzer, LOW);
 }
 
 String getTheTime()
@@ -60,45 +71,47 @@ String getDayOfWeek()
   return theDayOfWeek;
 }
 
-String getMonth() {
+String getMonth()
+{
   String theMonth;
-  switch (clock.month) {
-    case 1:
-      theMonth = "January";
-      break;
-    case 2:
-      theMonth = "February";
-      break;
-    case 3:
-      theMonth = "March";
-      break;
-    case 4:
-      theMonth = "April";
-      break;
-    case 5:
-      theMonth = "May";
-      break;
-    case 6:
-      theMonth = "June";
-      break;
-    case 7:
-      theMonth = "July";
-      break;
-    case 8:
-      theMonth = "August";
-      break;
-    case 9:
-      theMonth = "September";
-      break;
-    case 10:
-      theMonth = "October";
-      break;
-    case 11:
-      theMonth = "November";
-      break;
-    case 12:
-      theMonth = "December";
-      break;
+  switch (clock.month)
+  {
+  case 1:
+    theMonth = "January";
+    break;
+  case 2:
+    theMonth = "February";
+    break;
+  case 3:
+    theMonth = "March";
+    break;
+  case 4:
+    theMonth = "April";
+    break;
+  case 5:
+    theMonth = "May";
+    break;
+  case 6:
+    theMonth = "June";
+    break;
+  case 7:
+    theMonth = "July";
+    break;
+  case 8:
+    theMonth = "August";
+    break;
+  case 9:
+    theMonth = "September";
+    break;
+  case 10:
+    theMonth = "October";
+    break;
+  case 11:
+    theMonth = "November";
+    break;
+  case 12:
+    theMonth = "December";
+    break;
   }
   return theMonth;
 }
@@ -134,9 +147,8 @@ void displayDayOfWeek(String dayOfWeek)
   } while (u8g2.nextPage());
 }
 
-void loop()
+void displayClock()
 {
-  clock.getTime();
   int mod10 = clock.second % 10;
   if (mod10 < 6)
   {
@@ -150,5 +162,43 @@ void loop()
   {
     displayDate(String(clock.dayOfMonth, DEC), getMonth());
   }
-  delay(100);
+}
+
+void displayAlarm()
+{
+  u8g2.firstPage();
+  String alarmText = "ALARM";
+
+  digitalWrite(led,HIGH); 
+  tone(buzzer,350);
+  do
+  {
+    u8g2.setFont(u8g2_font_ncenB14_tr);
+    u8g2.drawStr(ALIGN_CENTER(alarmText), 36, alarmText.c_str());
+  } while (u8g2.nextPage());
+  delay(500);
+  digitalWrite(led,LOW);
+  noTone(buzzer);
+  u8g2.firstPage();
+  do
+  {
+    // display blank screen
+  } while (u8g2.nextPage());
+  delay(500);
+}
+
+void loop()
+{
+  clock.getTime();
+  if (clock.hour == alarmHour && clock.minute == alarmMinute)
+  {
+    displayAlarm();
+  }
+  else
+  {
+    displayClock();
+    //displayAlarm();
+
+  }
+  delay(500);
 }
