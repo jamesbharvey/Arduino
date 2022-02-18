@@ -5,6 +5,11 @@
 DS1307 clock; // define a object of DS1307 class
 U8G2_SSD1306_128X64_NONAME_1_HW_I2C u8g2(U8G2_R2, /* reset=*/U8X8_PIN_NONE);
 
+#define LCDWidth                        u8g2.getDisplayWidth()
+#define ALIGN_CENTER(t)                 ((LCDWidth - (u8g2.getUTF8Width(t.c_str()))) / 2)
+#define ALIGN_RIGHT(t)                  (LCDWidth -  u8g2.getUTF8Width(t.c_str()))
+#define ALIGN_LEFT                      0
+
 void setup()
 {
   clock.begin();
@@ -18,10 +23,10 @@ String getTheTime()
   if (clock.minute < 10)
     theTime += "0";
   theTime += String(clock.minute, DEC);
-  theTime += ":";
-  if (clock.second < 10)
-    theTime += "0";
-  theTime += String(clock.second, DEC);
+  // theTime += ":";
+  // if (clock.second < 10)
+  //   theTime += "0";
+  // theTime += String(clock.second, DEC);
   return theTime;
 }
 
@@ -70,6 +75,30 @@ String getMonth() {
     case 4:
       theMonth = "April";
       break;
+    case 5:
+      theMonth = "May";
+      break;
+    case 6:
+      theMonth = "June";
+      break;
+    case 7:
+      theMonth = "July";
+      break;
+    case 8:
+      theMonth = "August";
+      break;
+    case 9:
+      theMonth = "September";
+      break;
+    case 10:
+      theMonth = "October";
+      break;
+    case 11:
+      theMonth = "November";
+      break;
+    case 12:
+      theMonth = "December";
+      break;
   }
   return theMonth;
 }
@@ -80,7 +109,7 @@ void displayTime(String theTime)
   do
   {
     u8g2.setFont(u8g2_font_ncenB14_tr);
-    u8g2.drawStr(25, 36, theTime.c_str());
+    u8g2.drawStr(ALIGN_CENTER(theTime), 36, theTime.c_str());
   } while (u8g2.nextPage());
 }
 
@@ -91,7 +120,7 @@ void displayDate(String dayOfMonth, String month)
   do
   {
     u8g2.setFont(u8g2_font_ncenB10_tr);
-    u8g2.drawStr(25, 36, theDate.c_str());
+    u8g2.drawStr(ALIGN_CENTER(theDate), 36, theDate.c_str());
   } while (u8g2.nextPage());
 }
 
@@ -101,7 +130,7 @@ void displayDayOfWeek(String dayOfWeek)
   do
   {
     u8g2.setFont(u8g2_font_ncenB14_tr);
-    u8g2.drawStr(25, 36, dayOfWeek.c_str());
+    u8g2.drawStr(ALIGN_CENTER(dayOfWeek), 36, dayOfWeek.c_str());
   } while (u8g2.nextPage());
 }
 
@@ -121,4 +150,5 @@ void loop()
   {
     displayDate(String(clock.dayOfMonth, DEC), getMonth());
   }
+  delay(100);
 }
