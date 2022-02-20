@@ -16,8 +16,8 @@ char button = 6;
 char rotary = A0;
 
 // hardcoded default alarm time
-int alarmHour = 22;
-int alarmMinute = 01;
+int alarmHour = 8;
+int alarmMinute = 00;
 
 #define LCDWidth u8g2.getDisplayWidth()
 #define ALIGN_CENTER(t) ((LCDWidth - (u8g2.getUTF8Width(t.c_str()))) / 2)
@@ -37,6 +37,11 @@ char MODE = 1;
 #define CLOCK_SET_MODE 4
 char alarmCanceled = false;
 
+
+void serialDebug(String message) {
+  //Serial.println(message);
+}
+
 void Checker()
 {
   static char LEDBlink = 0;
@@ -44,7 +49,7 @@ void Checker()
   {
     if (digitalRead(button) == HIGH)
     {
-      Serial.println("Cancelling Alarm");
+      serialDebug("Cancelling Alarm");
       MODE = CLOCK_MODE;
       alarmCanceled = true;
       return;
@@ -261,20 +266,7 @@ void displayAlarm()
   }
 }
 
-void setup()
-{
-  clock.begin();
-  u8g2.begin();
-  pinMode(rotary, INPUT);
-  pinMode(button, INPUT);
-  pinMode(led, OUTPUT);
-  pinMode(buzzer, OUTPUT);
-  digitalWrite(buzzer, LOW);
-  tuneLength = sizeof(tune) / sizeof(tune[0]);
-  MsTimer2::set(10, Checker); // 10ms period
-  MsTimer2::start();
-  Serial.begin(9600);
-}
+
 
 /* void loop()
 {
@@ -293,10 +285,10 @@ void setup()
  */
 void select_mode(int n)
 {
-  Serial.print("reached select_mode, mode is[");
-  String debug = String(n, DEC);
+  String debug = "reached select_mode, mode is[";
+  debug += String(n, DEC);
   debug += "]";
-  Serial.println(debug);
+  serialDebug(debug);
   switch (n)
   {
   case 1:
@@ -325,6 +317,23 @@ void select_mode(int n)
 // stuff for the main loop
 
 char LongPress = false;
+
+void setup()
+{
+  clock.begin();
+  u8g2.begin();
+  pinMode(rotary, INPUT);
+  pinMode(button, INPUT);
+  pinMode(led, OUTPUT);
+  pinMode(buzzer, OUTPUT);
+  digitalWrite(buzzer, LOW);
+  tuneLength = sizeof(tune) / sizeof(tune[0]);
+  MsTimer2::set(10, Checker); // 10ms period
+  MsTimer2::start();
+  //Serial.begin(9600);
+}
+
+
 
 void loop()
 {
@@ -375,9 +384,9 @@ void loop()
       }
     }
   }
-  Serial.print("in loop, mode is [");
-  String debug = String(MODE, DEC);
-  Serial.println(debug);
+  
+  String debug = "in loop, mode is [" + String(MODE, DEC) + "]";
+  serialDebug(debug);
   clock.getTime();
   if (MODE == CLOCK_MODE)
   {
