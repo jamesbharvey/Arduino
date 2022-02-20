@@ -1,13 +1,18 @@
 #include "Arduino.h"
 #include <DS1307.h>  // Realtime clock library
 #include <U8g2lib.h> //OLED Display library
+#include "music.h"
 
 DS1307 clock; // define a object of DS1307 class
 U8G2_SSD1306_128X64_NONAME_1_HW_I2C u8g2(U8G2_R2, /* reset=*/U8X8_PIN_NONE);
+
+// pins
 char led = 4;
 char buzzer = 5;
 char button = 6;
 char rotary = A0;
+
+// hardcoded default alarm time
 int alarmHour = 8;
 int alarmMinute = 0;
 
@@ -25,6 +30,7 @@ void setup()
   pinMode(led, OUTPUT);
   pinMode(buzzer, OUTPUT);
   digitalWrite(buzzer, LOW);
+  tuneLength = sizeof(tune) / sizeof(tune[0]);
 }
 
 String getTheTime()
@@ -164,20 +170,21 @@ void displayClock()
   }
 }
 
-void displayAlarm()
+
+void oldDisplayAlarm()
 {
   u8g2.firstPage();
   String alarmText = "ALARM";
 
-  digitalWrite(led,HIGH); 
-  tone(buzzer,350);
+  digitalWrite(led, HIGH);
+  tone(buzzer, 350);
   do
   {
     u8g2.setFont(u8g2_font_ncenB14_tr);
     u8g2.drawStr(ALIGN_CENTER(alarmText), 36, alarmText.c_str());
   } while (u8g2.nextPage());
   delay(500);
-  digitalWrite(led,LOW);
+  digitalWrite(led, LOW);
   noTone(buzzer);
   u8g2.firstPage();
   do
@@ -185,6 +192,32 @@ void displayAlarm()
     // display blank screen
   } while (u8g2.nextPage());
   delay(500);
+}
+
+void displayAlarm()
+{
+  String alarmText = "ALARM";
+
+  for (int x = 0; x < tuneLength; x++)
+  {
+    tone(buzzer, tune[x]);
+    digitalWrite(led, HIGH);
+    u8g2.firstPage();
+    do
+    {
+      u8g2.setFont(u8g2_font_ncenB14_tr);
+      u8g2.drawStr(ALIGN_CENTER(alarmText), 36, alarmText.c_str());
+    } while (u8g2.nextPage());
+    delay(250 * durt[x]);
+    digitalWrite(led, LOW);
+    u8g2.firstPage();
+    do
+    {
+      // display blank screen
+    } while (u8g2.nextPage());
+    delay(50 * durt[x]);
+    noTone(buzzer);
+  }
 }
 
 void loop()
@@ -198,7 +231,6 @@ void loop()
   {
     displayClock();
     //displayAlarm();
-
   }
   delay(500);
 }
