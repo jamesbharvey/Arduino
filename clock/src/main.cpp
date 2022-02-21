@@ -17,7 +17,7 @@ char rotary = A0;
 
 // hardcoded default alarm time
 int alarmHour = 8;
-int alarmMinute = 00;
+int alarmMinute = 0;
 
 #define LCDWidth u8g2.getDisplayWidth()
 #define ALIGN_CENTER(t) ((LCDWidth - (u8g2.getUTF8Width(t.c_str()))) / 2)
@@ -39,7 +39,7 @@ char alarmCanceled = false;
 
 
 void serialDebug(String message) {
-  //Serial.println(message);
+  Serial.println(message);
 }
 
 void Checker()
@@ -330,10 +330,8 @@ void setup()
   tuneLength = sizeof(tune) / sizeof(tune[0]);
   MsTimer2::set(10, Checker); // 10ms period
   MsTimer2::start();
-  //Serial.begin(9600);
+  Serial.begin(9600);
 }
-
-
 
 void loop()
 {
@@ -408,7 +406,8 @@ void loop()
   {
     if (!alarmCanceled)
     {
-      displayAlarm();
+      oldDisplayAlarm();
+      delay(100);
     }
   }
 }
