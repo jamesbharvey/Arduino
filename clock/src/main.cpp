@@ -35,10 +35,12 @@ char MODE = 1;
 #define ALARM_PLAYBACK_MODE 2
 #define ALARM_SET_MODE 3
 #define CLOCK_SET_MODE 4
+#define ALARM_TOGGLE_MODE 5
+
 char alarmCanceled = false;
 
-
-void serialDebug(String message) {
+void serialDebug(String message)
+{
   Serial.println(message);
 }
 
@@ -266,8 +268,6 @@ void displayAlarm()
   }
 }
 
-
-
 /* void loop()
 {
   clock.getTime();
@@ -291,29 +291,90 @@ void select_mode(int n)
   serialDebug(debug);
   switch (n)
   {
-  case 1:
+  case CLOCK_SET_MODE:
     u8g2.firstPage();
     do
     {
+      String displayText = "Time Set";
       u8g2.setFont(u8g2_font_t0_16b_mr);
       u8g2.drawXBMP(49, 16, 30, 30, light_tmp);
-      u8g2.setCursor(44, 46);
-      u8g2.print(F("Light")); // write something to the internal memory
+      u8g2.setCursor(ALIGN_CENTER(displayText), 46);
+      u8g2.print(F("Time Set")); // write something to the internal memory
     } while (u8g2.nextPage());
     break;
-  case 2:
+  case ALARM_SET_MODE:
     u8g2.firstPage();
     do
     {
+      String displayText = "Alarm Set";
       u8g2.setFont(u8g2_font_t0_16b_mr);
       u8g2.drawXBMP(49, 8, 30, 30, sound_bmp1);
-      u8g2.setCursor(44, 48);
-      u8g2.print(F("Sound")); // write something to the internal memory
+      u8g2.setCursor(ALIGN_CENTER(displayText), 48);
+      u8g2.print(F("Alarm Set")); // write something to the internal memory
     } while (u8g2.nextPage());
     break;
   }
 }
 
+void setAlarm()
+{
+  int newAlarmHour = alarmHour;
+  int initialRotaryPosition = analogRead(rotary) / 204.8;
+  int currentRotaryPosition = initialRotaryPosition;
+  while (1)
+  {
+    u8g2.firstPage();
+    do
+    {
+      u8g2.setFont(u8g2_font_ncenB14_tr);
+      u8g2.drawStr(ALIGN_CENTER(String(newAlarmHour, DEC)), 36, String(newAlarmHour, DEC).c_str());
+    } while (u8g2.nextPage());
+    currentRotaryPosition = analogRead(rotary) / 204.8;
+    if (currentRotaryPosition != initialRotaryPosition)
+    {
+      initialRotaryPosition = currentRotaryPosition;
+      newAlarmHour++;
+      newAlarmHour = newAlarmHour % 24;
+    }
+    if (digitalRead(button) == HIGH)
+    {
+      delay(4);
+      if (digitalRead(button) == HIGH)
+      {
+        break;
+      }
+    }
+  }
+  delay(1000);
+  int newAlarmMinute = alarmMinute;
+  while (1)
+  {
+    u8g2.firstPage();
+    do
+    {
+      u8g2.setFont(u8g2_font_ncenB14_tr);
+      u8g2.drawStr(ALIGN_CENTER(String(newAlarmMinute, DEC)), 36, String(newAlarmMinute, DEC).c_str());
+    } while (u8g2.nextPage());
+    currentRotaryPosition = analogRead(rotary) / 204.8;
+    if (currentRotaryPosition != initialRotaryPosition)
+    {
+      initialRotaryPosition = currentRotaryPosition;
+      newAlarmMinute++;
+      newAlarmMinute = newAlarmMinute % 60;
+    }
+    if (digitalRead(button) == HIGH)
+    {
+      delay(4);
+      if (digitalRead(button) == HIGH)
+      {
+        break;
+      }
+    }
+  }
+  alarmHour = newAlarmHour;
+  alarmMinute = newAlarmMinute;
+  MODE = CLOCK_MODE;
+}
 // stuff for the main loop
 
 char LongPress = false;
@@ -359,7 +420,7 @@ void loop()
           }
           while (1)
           {
-            int n = analogRead(rotary) / 204.8 + 1;
+            int n = analogRead(rotary) / 512 + 3;
             digitalWrite(led, HIGH);
             digitalWrite(buzzer, LOW);
             select_mode(n);
@@ -368,7 +429,7 @@ void loop()
               delay(4);
               if (digitalRead(button) == HIGH)
               {
-                MODE = analogRead(rotary) / 204.8 + 1;
+                MODE = analogRead(rotary) / 512 + 3;
                 while (digitalRead(button))
                   ;
                 digitalWrite(led, LOW);
@@ -382,7 +443,7 @@ void loop()
       }
     }
   }
-  
+
   String debug = "in loop, mode is [" + String(MODE, DEC) + "]";
   serialDebug(debug);
   clock.getTime();
@@ -409,5 +470,12 @@ void loop()
       oldDisplayAlarm();
       delay(100);
     }
+  }
+  else if (MODE == CLOCK_SET_MODE)
+  {
+  }
+  else if (MODE == ALARM_SET_MODE)
+  {
+    setAlarm();
   }
 }
