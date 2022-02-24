@@ -41,7 +41,7 @@ char alarmCanceled = false;
 
 void serialDebug(String message)
 {
-  Serial.println(message);
+  // Serial.println(message);
 }
 
 void Checker()
@@ -96,10 +96,10 @@ String getTheTime()
   return theTime;
 }
 
-String getDayOfWeek()
+String getDayOfWeek(int dayOfWeek)
 {
   String theDayOfWeek;
-  switch (clock.dayOfWeek)
+  switch (dayOfWeek)
   {
   case MON:
     theDayOfWeek = "Monday";
@@ -126,10 +126,10 @@ String getDayOfWeek()
   return theDayOfWeek;
 }
 
-String getMonth()
+String getMonth(int month)
 {
   String theMonth;
-  switch (clock.month)
+  switch (month)
   {
   case 1:
     theMonth = "January";
@@ -169,6 +169,70 @@ String getMonth()
     break;
   }
   return theMonth;
+}
+
+bool isLeapYear(int year)
+{
+  // If a year is multiple of 400,
+  // then it is a leap year
+  if (year % 400 == 0)
+    return true;
+
+  // Else If a year is multiple of 100,
+  // then it is not a leap year
+  if (year % 100 == 0)
+    return false;
+
+  // Else If a year is multiple of 4,
+  // then it is a leap year
+  if (year % 4 == 0)
+    return true;
+  return false;
+}
+
+int daysInMonth(int month, int year)
+{
+  int days = 0;
+  switch (month)
+  {
+  case 1:
+    days = 31;
+    break;
+  case 2:
+    days = isLeapYear(year) ? 29 : 28;
+    break;
+  case 3:
+    days = 31;
+    break;
+  case 4:
+    days = 30;
+    break;
+  case 5:
+    days = 31;
+    break;
+  case 6:
+    days = 30;
+    break;
+  case 7:
+    days = 31;
+    break;
+  case 8:
+    days = 31;
+    break;
+  case 9:
+    days = 30;
+    break;
+  case 10:
+    days = 31;
+    break;
+  case 11:
+    days = 30;
+    break;
+  case 12:
+    days = 31;
+    break;
+  }
+  return days;
 }
 
 void displayTime(String theTime)
@@ -211,11 +275,11 @@ void displayClock()
   }
   else if (mod10 < 8)
   {
-    displayDayOfWeek(getDayOfWeek());
+    displayDayOfWeek(getDayOfWeek(clock.dayOfWeek));
   }
   else
   {
-    displayDate(String(clock.dayOfMonth, DEC), getMonth());
+    displayDate(String(clock.dayOfMonth, DEC), getMonth(clock.month));
   }
 }
 
@@ -268,22 +332,7 @@ void displayAlarm()
   }
 }
 
-/* void loop()
-{
-  clock.getTime();
-  if (clock.hour == alarmHour && clock.minute == alarmMinute)
-  {
-    displayAlarm();
-  }
-  else
-  {
-    //displayClock();
-    displayAlarm();
-  }
-  delay(500);
-}
- */
-void select_mode(int n)
+void selectMode(int n)
 {
   String debug = "reached select_mode, mode is[";
   debug += String(n, DEC);
@@ -313,12 +362,23 @@ void select_mode(int n)
       u8g2.print(F("Alarm Set")); // write something to the internal memory
     } while (u8g2.nextPage());
     break;
+  case ALARM_TOGGLE_MODE:
+    u8g2.firstPage();
+    do
+    {
+      String displayText = "Alarm On/Off";
+      u8g2.setFont(u8g2_font_t0_16b_mr);
+      u8g2.drawXBMP(49, 8, 30, 30, sound_bmp1);
+      u8g2.setCursor(ALIGN_CENTER(displayText), 48);
+      u8g2.print(F("Alarm On/Off")); // write something to the internal memory
+    } while (u8g2.nextPage());
+    break;
   }
 }
 
-void setAlarm()
+void setHourAndMinute(int *hour, int *minute)
 {
-  int newAlarmHour = alarmHour;
+  int newHour = *hour;
   int initialRotaryPosition = analogRead(rotary) / 204.8;
   int currentRotaryPosition = initialRotaryPosition;
   while (1)
@@ -327,14 +387,14 @@ void setAlarm()
     do
     {
       u8g2.setFont(u8g2_font_ncenB14_tr);
-      u8g2.drawStr(ALIGN_CENTER(String(newAlarmHour, DEC)), 36, String(newAlarmHour, DEC).c_str());
+      u8g2.drawStr(ALIGN_CENTER(String(newHour, DEC)), 36, String(newHour, DEC).c_str());
     } while (u8g2.nextPage());
     currentRotaryPosition = analogRead(rotary) / 204.8;
     if (currentRotaryPosition != initialRotaryPosition)
     {
       initialRotaryPosition = currentRotaryPosition;
-      newAlarmHour++;
-      newAlarmHour = newAlarmHour % 24;
+      newHour++;
+      newHour = newHour % 24;
     }
     if (digitalRead(button) == HIGH)
     {
@@ -346,21 +406,21 @@ void setAlarm()
     }
   }
   delay(1000);
-  int newAlarmMinute = alarmMinute;
+  int newMinute = *minute;
   while (1)
   {
     u8g2.firstPage();
     do
     {
       u8g2.setFont(u8g2_font_ncenB14_tr);
-      u8g2.drawStr(ALIGN_CENTER(String(newAlarmMinute, DEC)), 36, String(newAlarmMinute, DEC).c_str());
+      u8g2.drawStr(ALIGN_CENTER(String(newMinute, DEC)), 36, String(newMinute, DEC).c_str());
     } while (u8g2.nextPage());
     currentRotaryPosition = analogRead(rotary) / 204.8;
     if (currentRotaryPosition != initialRotaryPosition)
     {
       initialRotaryPosition = currentRotaryPosition;
-      newAlarmMinute++;
-      newAlarmMinute = newAlarmMinute % 60;
+      newMinute++;
+      newMinute = newMinute % 60;
     }
     if (digitalRead(button) == HIGH)
     {
@@ -371,11 +431,185 @@ void setAlarm()
       }
     }
   }
-  alarmHour = newAlarmHour;
-  alarmMinute = newAlarmMinute;
-  MODE = CLOCK_MODE;
+  *hour = newHour;
+  *minute = newMinute;
 }
 // stuff for the main loop
+
+int setYear()
+{
+  int newYear = 2020;
+  int initialRotaryPosition = analogRead(rotary) / 204.8;
+  int currentRotaryPosition = initialRotaryPosition;
+  while (1)
+  {
+    u8g2.firstPage();
+    do
+    {
+      u8g2.setFont(u8g2_font_ncenB14_tr);
+      u8g2.drawStr(ALIGN_CENTER(String(newYear, DEC)), 36, String(newYear, DEC).c_str());
+    } while (u8g2.nextPage());
+    currentRotaryPosition = analogRead(rotary) / 204.8;
+    if (currentRotaryPosition != initialRotaryPosition)
+    {
+      initialRotaryPosition = currentRotaryPosition;
+      newYear++;
+    }
+    if (digitalRead(button) == HIGH)
+    {
+      delay(4);
+      if (digitalRead(button) == HIGH)
+      {
+        break;
+      }
+    }
+  }
+  delay(1000);
+  return newYear - 2000;
+}
+
+int setMonth(int oldMonth)
+{
+  int newMonth = oldMonth;
+
+  int initialRotaryPosition = analogRead(rotary) / 204.8;
+  int currentRotaryPosition = initialRotaryPosition;
+  while (1)
+  {
+    u8g2.firstPage();
+    do
+    {
+      u8g2.setFont(u8g2_font_ncenB14_tr);
+      u8g2.drawStr(ALIGN_CENTER(getMonth(newMonth)), 36, getMonth(newMonth).c_str());
+    } while (u8g2.nextPage());
+    currentRotaryPosition = analogRead(rotary) / 204.8;
+    if (currentRotaryPosition != initialRotaryPosition)
+    {
+      initialRotaryPosition = currentRotaryPosition;
+      newMonth++;
+      if (newMonth > 12)
+      {
+        newMonth = newMonth - 12;
+      }
+    }
+    if (digitalRead(button) == HIGH)
+    {
+      delay(4);
+      if (digitalRead(button) == HIGH)
+      {
+        break;
+      }
+    }
+  }
+  delay(1000);
+  return newMonth;
+}
+
+int setDayOfMonth(int oldDayOfMonth, int numDaysInMonth)
+{
+  int newDayOfMonth = oldDayOfMonth;
+
+  int initialRotaryPosition = analogRead(rotary) / 204.8;
+  int currentRotaryPosition = initialRotaryPosition;
+  while (1)
+  {
+    u8g2.firstPage();
+    do
+    {
+      u8g2.setFont(u8g2_font_ncenB14_tr);
+      u8g2.drawStr(ALIGN_CENTER(String(newDayOfMonth, DEC)), 36, String(newDayOfMonth, DEC).c_str());
+    } while (u8g2.nextPage());
+    currentRotaryPosition = analogRead(rotary) / 204.8;
+    if (currentRotaryPosition != initialRotaryPosition)
+    {
+      initialRotaryPosition = currentRotaryPosition;
+      newDayOfMonth++;
+      if (newDayOfMonth > numDaysInMonth)
+      {
+        newDayOfMonth = newDayOfMonth - numDaysInMonth;
+      }
+    }
+    if (digitalRead(button) == HIGH)
+    {
+      delay(4);
+      if (digitalRead(button) == HIGH)
+      {
+        break;
+      }
+    }
+  }
+  delay(1000);
+  return newDayOfMonth;
+}
+
+int setDayOfWeek(int oldDayOfWeek)
+{
+  int newDayOfWeek = oldDayOfWeek;
+
+  int initialRotaryPosition = analogRead(rotary) / 204.8;
+  int currentRotaryPosition = initialRotaryPosition;
+  while (1)
+  {
+    u8g2.firstPage();
+    do
+    {
+      u8g2.setFont(u8g2_font_ncenB14_tr);
+      u8g2.drawStr(ALIGN_CENTER(getDayOfWeek(newDayOfWeek)), 36, getDayOfWeek(newDayOfWeek).c_str());
+    } while (u8g2.nextPage());
+    currentRotaryPosition = analogRead(rotary) / 204.8;
+    if (currentRotaryPosition != initialRotaryPosition)
+    {
+      initialRotaryPosition = currentRotaryPosition;
+      newDayOfWeek++;
+      if (newDayOfWeek > 7)
+      {
+        newDayOfWeek = newDayOfWeek - 7;
+      }
+    }
+    if (digitalRead(button) == HIGH)
+    {
+      delay(4);
+      if (digitalRead(button) == HIGH)
+      {
+        break;
+      }
+    }
+  }
+  delay(1000);
+  return newDayOfWeek;
+}
+
+void setAlarm()
+{
+  setHourAndMinute(&alarmHour, &alarmMinute);
+  MODE = CLOCK_MODE;
+}
+
+void setClock()
+{
+  int newHour = clock.hour;
+  int newMinute = clock.minute;
+  int newYear = clock.year;
+  int newMonth = clock.month;
+  int newDayOfMonth = clock.dayOfMonth;
+  int newDayOfWeek = clock.dayOfWeek;
+
+  newYear = setYear();
+  newMonth = setMonth(newMonth);
+  newDayOfMonth = setDayOfMonth(newDayOfMonth, daysInMonth(newMonth, newYear));
+  newDayOfWeek = setDayOfWeek(newDayOfWeek);
+  setHourAndMinute(&newHour, &newMinute);
+
+  clock.fillByYMD(newYear, newMonth, newDayOfMonth);
+  clock.fillByHMS(newHour, newMinute, 30); // 30 seconds
+  clock.fillDayOfWeek(newDayOfWeek);
+  clock.setTime(); // write time to the RTC chip
+  MODE = CLOCK_MODE;
+}
+
+void toggleAlarm()
+{
+}
 
 char LongPress = false;
 
@@ -391,7 +625,7 @@ void setup()
   tuneLength = sizeof(tune) / sizeof(tune[0]);
   MsTimer2::set(10, Checker); // 10ms period
   MsTimer2::start();
-  Serial.begin(9600);
+  // Serial.begin(9600);
 }
 
 void loop()
@@ -420,16 +654,16 @@ void loop()
           }
           while (1)
           {
-            int n = analogRead(rotary) / 512 + 3;
+            int n = analogRead(rotary) / 341.33 + 3;
             digitalWrite(led, HIGH);
             digitalWrite(buzzer, LOW);
-            select_mode(n);
+            selectMode(n);
             if (digitalRead(button) == HIGH)
             {
               delay(4);
               if (digitalRead(button) == HIGH)
               {
-                MODE = analogRead(rotary) / 512 + 3;
+                MODE = analogRead(rotary) / 341.33 + 3;
                 while (digitalRead(button))
                   ;
                 digitalWrite(led, LOW);
@@ -473,9 +707,14 @@ void loop()
   }
   else if (MODE == CLOCK_SET_MODE)
   {
+    setClock();
   }
   else if (MODE == ALARM_SET_MODE)
   {
     setAlarm();
+  }
+  else if (MODE == ALARM_TOGGLE_MODE)
+  {
+    toggleAlarm();
   }
 }
