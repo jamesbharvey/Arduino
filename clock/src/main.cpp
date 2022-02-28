@@ -19,6 +19,8 @@ char rotary = A0;
 int alarmHour = 8;
 int alarmMinute = 0;
 bool alarmOn = false;
+int tunePosition = 0;
+char alarmCanceled = false;
 
 #define LCDWidth u8g2.getDisplayWidth()
 #define ALIGN_CENTER(t) ((LCDWidth - (u8g2.getUTF8Width(t.c_str()))) / 2)
@@ -37,8 +39,6 @@ char MODE = 1;
 #define ALARM_SET_MODE 3
 #define CLOCK_SET_MODE 4
 #define ALARM_TOGGLE_MODE 5
-
-char alarmCanceled = false;
 
 void serialDebug(String message)
 {
@@ -310,27 +310,26 @@ void oldDisplayAlarm()
 void displayAlarm()
 {
   String alarmText = "ALARM";
-
-  for (int x = 0; x < tuneLength; x++)
+  int x = tunePosition;
+  tunePosition++;
+  tunePosition = tunePosition % tuneLength;
+  tone(buzzer, tune[x]);
+  digitalWrite(led, HIGH);
+  u8g2.firstPage();
+  do
   {
-    tone(buzzer, tune[x]);
-    digitalWrite(led, HIGH);
-    u8g2.firstPage();
-    do
-    {
-      u8g2.setFont(u8g2_font_ncenB14_tr);
-      u8g2.drawStr(ALIGN_CENTER(alarmText), 36, alarmText.c_str());
-    } while (u8g2.nextPage());
-    delay(250 * durt[x]);
-    digitalWrite(led, LOW);
-    u8g2.firstPage();
-    do
-    {
-      // display blank screen
-    } while (u8g2.nextPage());
-    delay(50 * durt[x]);
-    noTone(buzzer);
-  }
+    u8g2.setFont(u8g2_font_ncenB14_tr);
+    u8g2.drawStr(ALIGN_CENTER(alarmText), 36, alarmText.c_str());
+  } while (u8g2.nextPage());
+  delay(250 * durt[x]);
+  digitalWrite(led, LOW);
+  u8g2.firstPage();
+  do
+  {
+    // display blank screen
+  } while (u8g2.nextPage());
+  delay(50 * durt[x]);
+  noTone(buzzer);
 }
 
 void selectMode(int n)
@@ -583,6 +582,7 @@ int setDayOfWeek(int oldDayOfWeek)
 void setAlarm()
 {
   setHourAndMinute(&alarmHour, &alarmMinute);
+  alarmOn = true;
   MODE = CLOCK_MODE;
 }
 
@@ -730,6 +730,7 @@ void loop()
       {
         alarmCanceled = false;
       }
+      tunePosition = 0;
     }
     displayClock();
     delay(500);
@@ -738,8 +739,8 @@ void loop()
   {
     if (!alarmCanceled)
     {
-      oldDisplayAlarm();
-      delay(100);
+      displayAlarm();
+      //delay(100);
     }
   }
   else if (MODE == CLOCK_SET_MODE)
