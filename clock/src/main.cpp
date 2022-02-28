@@ -15,9 +15,10 @@ char buzzer = 5;
 char button = 6;
 char rotary = A0;
 
-// hardcoded default alarm time
+// default alarm time
 int alarmHour = 8;
 int alarmMinute = 0;
+bool alarmOn = false;
 
 #define LCDWidth u8g2.getDisplayWidth()
 #define ALIGN_CENTER(t) ((LCDWidth - (u8g2.getUTF8Width(t.c_str()))) / 2)
@@ -609,6 +610,42 @@ void setClock()
 
 void toggleAlarm()
 {
+  int initialRotaryPosition = analogRead(rotary) / 204.8;
+  int currentRotaryPosition = initialRotaryPosition;
+  while (1)
+  {
+    String displayString;
+    if (alarmOn)
+    {
+      displayString = "Alarm On";
+    }
+    else
+    {
+      displayString = "Alarm Off";
+    }
+    u8g2.firstPage();
+    do
+    {
+      u8g2.setFont(u8g2_font_ncenB14_tr);
+      u8g2.drawStr(ALIGN_CENTER(displayString), 36, displayString.c_str());
+    } while (u8g2.nextPage());
+    currentRotaryPosition = analogRead(rotary) / 204.8;
+    if (currentRotaryPosition != initialRotaryPosition)
+    {
+      initialRotaryPosition = currentRotaryPosition;
+      alarmOn = !alarmOn;
+    }
+    if (digitalRead(button) == HIGH)
+    {
+      delay(4);
+      if (digitalRead(button) == HIGH)
+      {
+        break;
+      }
+    }
+  }
+  delay(1000);
+  MODE = CLOCK_MODE;
 }
 
 char LongPress = false;
@@ -683,7 +720,7 @@ void loop()
   clock.getTime();
   if (MODE == CLOCK_MODE)
   {
-    if (clock.hour == alarmHour && clock.minute == alarmMinute)
+    if (alarmOn && clock.hour == alarmHour && clock.minute == alarmMinute)
     {
       MODE = ALARM_PLAYBACK_MODE;
     }
