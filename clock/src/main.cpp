@@ -742,6 +742,9 @@ void loop()
       displayAlarm();
       //delay(100);
     }
+    if (clock.minute != alarmMinute) {
+      MODE = CLOCK_MODE;
+    }
   }
   else if (MODE == CLOCK_SET_MODE)
   {
