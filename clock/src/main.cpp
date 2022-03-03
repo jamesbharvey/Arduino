@@ -20,7 +20,7 @@ int alarmHour = 8;
 int alarmMinute = 0;
 bool alarmOn = false;
 int tunePosition = 0;
-char alarmCanceled = false;
+bool alarmCanceled = false;
 
 #define LCDWidth u8g2.getDisplayWidth()
 #define ALIGN_CENTER(t) ((LCDWidth - (u8g2.getUTF8Width(t.c_str()))) / 2)
@@ -28,9 +28,9 @@ char alarmCanceled = false;
 #define ALIGN_LEFT 0
 
 // stuff for our Interrupt checker
-char PressCounter = 0;
-char BlinkEnable = true;
-char MODE = 1;
+int PressCounter = 0;
+bool BlinkEnable = true;
+int MODE = 1;
 
 #define BLINK 10
 #define CLICKS 100
@@ -376,18 +376,30 @@ void selectMode(int n)
   }
 }
 
+
+String paddedTimeString(int value)
+{
+  String valueString = String(value, DEC);
+  return value < 10 ? "0" + valueString : valueString;
+}
+
 void setHourAndMinute(int *hour, int *minute)
 {
   int newHour = *hour;
+  int newMinute = *minute;
+  String newMinuteString = paddedTimeString(newMinute);
   int initialRotaryPosition = analogRead(rotary) / 204.8;
   int currentRotaryPosition = initialRotaryPosition;
   while (1)
   {
+    String newHourString = paddedTimeString(newHour);
+    String secondHalf = ":" + newMinuteString;
+    String fullTimeString = newHourString + secondHalf;
     u8g2.firstPage();
     do
     {
       u8g2.setFont(u8g2_font_ncenB14_tr);
-      u8g2.drawStr(ALIGN_CENTER(String(newHour, DEC)), 36, String(newHour, DEC).c_str());
+      u8g2.drawStr(ALIGN_CENTER(fullTimeString), 36, fullTimeString.c_str());
     } while (u8g2.nextPage());
     currentRotaryPosition = analogRead(rotary) / 204.8;
     if (currentRotaryPosition != initialRotaryPosition)
@@ -406,14 +418,18 @@ void setHourAndMinute(int *hour, int *minute)
     }
   }
   delay(1000);
-  int newMinute = *minute;
+  String newHourString = paddedTimeString(newHour);
   while (1)
   {
+    String newMinuteString = paddedTimeString(newMinute);
+    String secondHalf = ":" + newMinuteString;
+    String fullTimeString = newHourString + secondHalf;
     u8g2.firstPage();
     do
     {
       u8g2.setFont(u8g2_font_ncenB14_tr);
-      u8g2.drawStr(ALIGN_CENTER(String(newMinute, DEC)), 36, String(newMinute, DEC).c_str());
+      u8g2.drawStr(ALIGN_CENTER(fullTimeString), 36, fullTimeString.c_str());
+
     } while (u8g2.nextPage());
     currentRotaryPosition = analogRead(rotary) / 204.8;
     if (currentRotaryPosition != initialRotaryPosition)
@@ -729,8 +745,8 @@ void loop()
       if (alarmCanceled)
       {
         alarmCanceled = false;
+        tunePosition = 0;
       }
-      tunePosition = 0;
     }
     displayClock();
     delay(500);
@@ -740,10 +756,12 @@ void loop()
     if (!alarmCanceled)
     {
       displayAlarm();
-      //delay(100);
+      // delay(100);
     }
-    if (clock.minute != alarmMinute) {
+    if (clock.minute != alarmMinute)
+    {
       MODE = CLOCK_MODE;
+      tunePosition = 0;
     }
   }
   else if (MODE == CLOCK_SET_MODE)
