@@ -21,16 +21,6 @@ const char *str[]={"sensor num:",
                     "pm2p5ae",
                     "pm10ae",
                     };
-
-err_t print_result(const char* str,u16 value)
-{
-    if(NULL==str)
-        return ERROR_PARAM;
-    Serial.print(str);
-    Serial.print("=");
-    Serial.print(value);
-    return NO_ERROR;
-}
  
 /*parse buf with 29 u8-data*/
 err_t parse_result(u8 *data)
@@ -38,14 +28,17 @@ err_t parse_result(u8 *data)
     u16 value=0;
     if(NULL==data)
         return ERROR_PARAM;
-    Serial.print("location=bedroom");
+    //print in the format expected by graphite's line protocol
     for(int i=2;i<8;i++)
     {
-         value = (u16)data[i*2]<<8|data[i*2+1];
-         Serial.print("&");
-         print_result(str[i-1],value);
+        value = (u16)data[i*2]<<8|data[i*2+1];
+        Serial.print("mysensors.bedroom.");
+        Serial.print(str[i-1]);
+        Serial.print(" ");
+        Serial.print(value);
+        Serial.println(" -1"); // -1 tells graphite to use time received
+        delay(1000);
     }
-    Serial.println();
     return NO_ERROR;
 }
  
@@ -99,5 +92,5 @@ void loop()
     }
     parse_result_value(buf);
     parse_result(buf);
-    delay(5000);
+    delay(60000);
 }

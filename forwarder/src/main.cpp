@@ -8,7 +8,7 @@
 const char* ssid = WIFISSID;
 const char* password = WIFIPASSWORD;
 WiFiClient client;
-#define UDP_PORT 2222
+#define UDP_PORT 2004 //graphite udp is 2003, we use 2004
 WiFiUDP Udp;
 
 IPAddress destinationIp(192, 168, 11, 23);
@@ -38,7 +38,6 @@ void sendUDP(String inString) {
   Udp.write(inString.c_str());
   Udp.write('\n');
   Udp.endPacket();
-  //delay(150);
 }
 
 void setup() {
@@ -58,7 +57,6 @@ void setup() {
 }
 
 void loop() {
-    // Post data to dweet.io
   const char delimeter = '\n';
   String inString = Serial.readStringUntil(delimeter);
   if (inString == "") {
@@ -66,7 +64,6 @@ void loop() {
     return;
   }
   sendUDP(inString);
-  delay(1000);
 }
 
 
