@@ -118,5 +118,5 @@ void loop()
     Serial.println(" -1"); // -1 tells graphite to use time received
     delay(1000);
 
-    //delay(22000); /*22s*/
+    delay(22000); /*22s*/
 }
