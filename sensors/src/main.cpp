@@ -11,6 +11,8 @@ DHT dht(DHTPIN, DHTTYPE);
 HM330X dustSensor;
 u8 dustSensorBuf[30];
 BMP280 bmp280;
+const int lightSensorPin = A0;
+const int soundSensorPin = A3;
 
 typedef HM330XErrorCode DustSensorError;
 
@@ -146,5 +148,22 @@ void loop()
     Serial.println(" -1"); // -1 tells graphite to use time received
     delay(1000);
  
-    delay(19000); /*19s*/
+    int lightValue = 0;
+    lightValue = analogRead(lightSensorPin);
+    Serial.print(GRAPHITETREEHEAD);
+    Serial.print("light ");
+    Serial.print(lightValue);
+    Serial.println(" -1"); // -1 tells graphite to use time received
+    delay(1000);
+ 
+    int soundValue = 0;
+    soundValue = analogRead(soundSensorPin);
+    Serial.print(GRAPHITETREEHEAD);
+    Serial.print("sound ");
+    Serial.print(soundValue);
+    Serial.println(" -1"); // -1 tells graphite to use time received
+    delay(1000);
+ 
+
+    delay(17000); /*17s*/
 }
