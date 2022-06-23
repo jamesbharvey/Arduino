@@ -5,14 +5,14 @@
 #include <WiFiNINA.h>
 #include <WiFiUdp.h>
 
-char ssid[] = WIFISSID;      // your network SSID (name)
-char pass[] = WIFIPASSWORD;  // your network password (use for WPA, or use as key for WEP)
-int status = WL_IDLE_STATUS; // the Wifi radio's status
+char ssid[] = WIFISSID;     // your network SSID (name)
+char pass[] = WIFIPASSWORD; // your network password (use for WPA, or use as key for WEP)
 WiFiUDP Udp;
 // graphite udp is 2003, we use 2004
 #define UDP_PORT 2004
 
 IPAddress destinationIp(192, 168, 11, 23);
+
 
 void printWifiData()
 {
@@ -31,6 +31,29 @@ void printWifiData()
   long rssi = WiFi.RSSI();
   Serial.print("signal strength (RSSI):");
   Serial.println(rssi);
+}
+
+void connectWifi()
+{
+  int status = WL_IDLE_STATUS; // the Wifi radio's status
+  while (status != WL_CONNECTED)
+  {
+    Serial.print("Attempting to connect to network: ");
+    Serial.println(ssid);
+    // Connect to WPA/WPA2 network:
+    status = WiFi.begin(ssid, pass);
+    // wait 10 seconds for connection:
+    delay(10000);
+  }
+
+  // you're connected now, so print out the data:
+  Serial.println("You're connected to the network");
+
+  Serial.println("----------------------------------------");
+  printWifiData();
+  Serial.println("----------------------------------------");
+
+  Udp.begin(UDP_PORT);
 }
 
 void sendDataToGraphite(String tag, float data)
@@ -54,8 +77,8 @@ void setup()
 
   Serial.begin(9600);
 
-  //while (!Serial)
-  //  ;
+  // while (!Serial)
+  //   ;
   delay(1000);
 
   if (!ENV.begin())
@@ -69,50 +92,35 @@ void setup()
 
   // check for the WiFi module:
 
-  if (WiFi.status() == WL_NO_MODULE) {
+  if (WiFi.status() == WL_NO_MODULE)
+  {
 
     Serial.println("Communication with WiFi module failed!");
 
     // don't continue
 
-    while (true);
-
+    while (true)
+      ;
   }
 
   String fv = WiFi.firmwareVersion();
 
-  if (fv < WIFI_FIRMWARE_LATEST_VERSION) {
+  if (fv < WIFI_FIRMWARE_LATEST_VERSION)
+  {
 
     Serial.println("Please upgrade the firmware");
-
   }
-
 
   // attempt to connect to Wifi network:
-  while (status != WL_CONNECTED)
-  {
-    Serial.print("Attempting to connect to network: ");
-    Serial.println(ssid);
-    // Connect to WPA/WPA2 network:
-    status = WiFi.begin(ssid, pass);
-
-    // wait 10 seconds for connection:
-    delay(10000);
-  }
-
-  // you're connected now, so print out the data:
-  Serial.println("You're connected to the network");
-
-  Serial.println("----------------------------------------");
-  printWifiData();
-  Serial.println("----------------------------------------");
-
-  Udp.begin(UDP_PORT);
 }
 
 void loop()
 {
 
+  while (WiFi.status() != WL_CONNECTED)
+  {
+    connectWifi();
+  }
   float temperature = ENV.readTemperature();
   sendDataToGraphite("temperature", temperature);
 
@@ -175,6 +183,6 @@ void loop()
   delay(30000);
 
   printWifiData();
-  
+
   Serial.println("----------------------------------------");
 }
