@@ -2,6 +2,28 @@
 #include "Seeed_HM330X.h"
 #include "Seeed_BMP280.h" // air pressure sensor
 #include "DHT.h"
+#include <SPI.h>
+#include <Wire.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
+
+#define SCREEN_WIDTH 128 // OLED display width, in pixels
+#define SCREEN_HEIGHT 32 // OLED display height, in pixels
+
+// Declaration for an SSD1306 display connected to I2C (SDA, SCL pins)
+// The pins for I2C are defined by the Wire-library.
+// On an arduino UNO:       A4(SDA), A5(SCL)
+// On an arduino MEGA 2560: 20(SDA), 21(SCL)
+// On an arduino LEONARDO:   2(SDA),  3(SCL), ...
+#define OLED_RESET -1 // Reset pin # (or -1 if sharing Arduino reset pin)
+
+#define SCREEN_ADDRESS 0x3C ///< See datasheet for Address; 0x3D for 128x64, 0x3C for 128x32
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
+
+#define NUMFLAKES 10 // Number of snowflakes in the animation example
+
+#define LOGO_HEIGHT 16
+#define LOGO_WIDTH 16
 
 #define DHTPIN 2
 #define DHTTYPE DHT11
@@ -51,6 +73,13 @@ DustSensorError dustSensorParsePrintResult(u8 *data)
         Serial.print(" ");
         Serial.print(value);
         Serial.println(" -1"); // -1 tells graphite to use time received
+        if (i == 5)
+        {
+            display.print(F("PM 2.5m: "));
+            display.print(value);
+            display.println(F(" ug/m3"));
+            display.display();
+        }
         delay(1000);
     }
     return NO_ERROR;
@@ -86,6 +115,21 @@ void setup()
     Serial.begin(9600);
     delay(100);
     // Serial.println("Serial start");
+    // SSD1306_SWITCHCAPVCC = generate display voltage from 3.3V internally
+    if (!display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS))
+    {
+        Serial.println(F("SSD1306 allocation failed"));
+        for (;;)
+            ; // Don't proceed, loop forever
+    }
+
+    // Show initial display buffer contents on the screen --
+    // the library initializes this with an Adafruit splash screen.
+    display.display();
+    delay(2000); // Pause for 2 seconds
+
+    // Clear the buffer
+    display.clearDisplay();
     if (dustSensor.init())
     {
         Serial.println("HM330X init failed!!!");
@@ -101,12 +145,12 @@ void setup()
 
 void loop()
 {
-    if (dustSensor.read_sensor_value(dustSensorBuf, 29))
-    {
-        Serial.println("HM330X read result failed!!!");
-    }
-    dustSensorParseResultValue(dustSensorBuf);
-    dustSensorParsePrintResult(dustSensorBuf);
+
+    display.clearDisplay();
+    display.display();
+    display.setTextSize(1);              // Normal 1:1 pixel scale
+    display.setTextColor(SSD1306_WHITE); // Draw white text
+    display.setCursor(0, 0);             // Start at top-left corner
 
     float temp;
     temp = dht.readTemperature();
@@ -114,6 +158,11 @@ void loop()
     Serial.print("temperature ");
     Serial.print(temp);
     Serial.println(" -1"); // -1 tells graphite to use time received
+    display.print(F("Temperature: "));
+    display.print(temp);
+    display.print(char(9));
+    display.println(F("C"));
+    display.display();
     delay(1000);
 
     float humi;
@@ -122,6 +171,10 @@ void loop()
     humi = dht.readHumidity();
     Serial.print(humi);
     Serial.println(" -1"); // -1 tells graphite to use time received
+    display.print(F("Humidity: "));
+    display.print(humi);
+    display.println(F("%"));
+    display.display();
     delay(1000);
 
     float Bmp280Temp;
@@ -138,6 +191,10 @@ void loop()
     Serial.print("pressure ");
     Serial.print(pressure);
     Serial.println(" -1"); // -1 tells graphite to use time received
+    display.print(F("BP: "));
+    display.print(pressure);
+    display.println(F(" hPa"));
+    display.display();
     delay(1000);
 
     float altitude;
@@ -147,7 +204,7 @@ void loop()
     Serial.print(altitude);
     Serial.println(" -1"); // -1 tells graphite to use time received
     delay(1000);
- 
+
     int lightValue = 0;
     lightValue = analogRead(lightSensorPin);
     Serial.print(GRAPHITETREEHEAD);
@@ -155,7 +212,7 @@ void loop()
     Serial.print(lightValue);
     Serial.println(" -1"); // -1 tells graphite to use time received
     delay(1000);
- 
+
     int soundValue = 0;
     soundValue = analogRead(soundSensorPin);
     Serial.print(GRAPHITETREEHEAD);
@@ -163,7 +220,13 @@ void loop()
     Serial.print(soundValue);
     Serial.println(" -1"); // -1 tells graphite to use time received
     delay(1000);
- 
+
+    if (dustSensor.read_sensor_value(dustSensorBuf, 29))
+    {
+        Serial.println("HM330X read result failed!!!");
+    }
+    dustSensorParseResultValue(dustSensorBuf);
+    dustSensorParsePrintResult(dustSensorBuf);
 
     delay(17000); /*17s*/
 }

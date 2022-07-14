@@ -111,7 +111,6 @@ void setup()
     Serial.println("Please upgrade the firmware");
   }
 
-  // attempt to connect to Wifi network:
 }
 
 void loop()
