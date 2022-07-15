@@ -35,6 +35,7 @@ u8 dustSensorBuf[30];
 BMP280 bmp280;
 const int lightSensorPin = A0;
 const int soundSensorPin = A3;
+float PM25GLOBAL;
 
 typedef HM330XErrorCode DustSensorError;
 
@@ -79,6 +80,7 @@ DustSensorError dustSensorParsePrintResult(u8 *data)
             display.print(value);
             display.println(F(" ug/m3"));
             display.display();
+            PM25GLOBAL = value; // ick....
         }
         delay(1000);
     }
@@ -143,6 +145,68 @@ void setup()
     }
 }
 
+void fancyLines(void)
+{
+  int16_t i;
+
+  display.clearDisplay(); // Clear display buffer
+
+  for(i=0; i<display.width(); i+=4) {
+    display.drawLine(0, 0, i, display.height()-1, SSD1306_WHITE);
+    display.display(); // Update screen with each newly-drawn line
+    delay(1);
+  }
+  for(i=0; i<display.height(); i+=4) {
+    display.drawLine(0, 0, display.width()-1, i, SSD1306_WHITE);
+    display.display();
+    delay(1);
+  }
+  delay(250);
+
+  display.clearDisplay();
+
+  for(i=0; i<display.width(); i+=4) {
+    display.drawLine(0, display.height()-1, i, 0, SSD1306_WHITE);
+    display.display();
+    delay(1);
+  }
+  for(i=display.height()-1; i>=0; i-=4) {
+    display.drawLine(0, display.height()-1, display.width()-1, i, SSD1306_WHITE);
+    display.display();
+    delay(1);
+  }
+  delay(250);
+
+  display.clearDisplay();
+
+  for(i=display.width()-1; i>=0; i-=4) {
+    display.drawLine(display.width()-1, display.height()-1, i, 0, SSD1306_WHITE);
+    display.display();
+    delay(1);
+  }
+  for(i=display.height()-1; i>=0; i-=4) {
+    display.drawLine(display.width()-1, display.height()-1, 0, i, SSD1306_WHITE);
+    display.display();
+    delay(1);
+  }
+  delay(250);
+
+  display.clearDisplay();
+
+  for(i=0; i<display.height(); i+=4) {
+    display.drawLine(display.width()-1, 0, 0, i, SSD1306_WHITE);
+    display.display();
+    delay(1);
+  }
+  for(i=0; i<display.width(); i+=4) {
+    display.drawLine(display.width()-1, 0, i, display.height()-1, SSD1306_WHITE);
+    display.display();
+    delay(1);
+  }
+
+    delay(500);
+}
+
 void loop()
 {
 
@@ -151,6 +215,8 @@ void loop()
     display.setTextSize(1);              // Normal 1:1 pixel scale
     display.setTextColor(SSD1306_WHITE); // Draw white text
     display.setCursor(0, 0);             // Start at top-left corner
+
+    String forScrolling[4];
 
     float temp;
     temp = dht.readTemperature();
@@ -163,6 +229,8 @@ void loop()
     display.print(char(9));
     display.println(F("C"));
     display.display();
+    String theTemp = "Temp: " + String(int(temp), DEC) + "C";
+    forScrolling[0] = theTemp;
     delay(1000);
 
     float humi;
@@ -175,6 +243,8 @@ void loop()
     display.print(humi);
     display.println(F("%"));
     display.display();
+    String theHumi = "Humi: " + String(int(humi), DEC) + "%";
+    forScrolling[1] = theHumi;
     delay(1000);
 
     float Bmp280Temp;
@@ -227,6 +297,24 @@ void loop()
     }
     dustSensorParseResultValue(dustSensorBuf);
     dustSensorParsePrintResult(dustSensorBuf);
+    delay(2000);
 
-    delay(17000); /*17s*/
+    display.clearDisplay();
+
+    fancyLines();
+    delay(1000);
+    display.clearDisplay();
+
+    display.setTextSize(2); // Draw 2X-scale text
+    display.setTextColor(SSD1306_WHITE);
+    display.setCursor(10, 11);
+    display.println(forScrolling[random(0,1)]);
+    display.display(); // Show initial text
+    delay(100);
+    display.startscrollright(0x00, 0x0F);
+    delay(15000); /*15s*/
+    display.stopscroll();
+    display.clearDisplay();
+    fancyLines();
+    display.clearDisplay();
 }
