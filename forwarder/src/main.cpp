@@ -21,7 +21,7 @@ WiFiUDP Udp;
 
 IPAddress destinationIp(192, 168, 11, 23);
 unsigned long previous_time = 0;
-unsigned long delay_between_attempts = 20000; // 20 seconds delay
+unsigned long delay_between_attempts = 120000; // two minute delay
 
 /*
  void httpFetch(String inString) {
@@ -70,20 +70,24 @@ void setup()
 
 void loop()
 {
-  unsigned long current_time = millis(); // number of milliseconds since the upload
 
   // checking for WIFI connection
-  while (WiFi.status() == WL_DISCONNECTED)
-  {
-    if (current_time - previous_time >= delay_between_attempts)
-    {
-      Serial.print(millis());
-      Serial.println("Reconnecting to WIFI network");
-      WiFi.disconnect();
-      WiFi.reconnect();
-      previous_time = current_time;
-    }
-  }
+  // while (WiFi.status() == WL_DISCONNECTED)
+  // {
+  //   unsigned long current_time = millis(); 
+  //   if (current_time - previous_time >= delay_between_attempts)
+  //   {
+  //     Serial.print(millis());
+  //     Serial.println("Reconnecting to WIFI network");
+  //     WiFi.disconnect();
+  //     WiFi.
+  //     WiFi.reconnect();
+  //     previous_time = current_time;
+
+  //   } else {
+  //     delay(delay_between_attempts);
+  //   }
+  // }
   const char delimeter = '\n';
   String inString = Serial.readStringUntil(delimeter);
   if (inString == "")
@@ -91,5 +95,7 @@ void loop()
     Serial.println("no input");
     return;
   }
-  sendUDP(inString);
+  if (inString.startsWith("mysensors.")) {
+    sendUDP(inString);
+  }
 }
