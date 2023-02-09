@@ -120,28 +120,28 @@ void setup()
 {
   Serial.begin(9600);
   delay(100);
-  // Serial.println("Serial start");
+  Serial.println("Serial start");
   // SSD1306_SWITCHCAPVCC = generate display voltage from 3.3V internally
-  if (!display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS))
-  {
-    Serial.println(F("SSD1306 allocation failed"));
-    for (;;)
-      ; // Don't proceed, loop forever
-  }
+  // if (!display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS))
+  // {
+  //   Serial.println(F("SSD1306 allocation failed"));
+  //   for (;;)
+  //     ; // Don't proceed, loop forever
+  // }
 
   // Show initial display buffer contents on the screen --
   // the library initializes this with an Adafruit splash screen.
-  display.display();
+  // display.display();
   delay(2000); // Pause for 2 seconds
 
-  // Clear the buffer
-  display.clearDisplay();
-  if (dustSensor.init())
-  {
-    Serial.println("HM330X init failed!!!");
-    while (1)
-      ;
-  }
+  //Clear the buffer
+  // display.clearDisplay();
+  // if (dustSensor.init())
+  // {
+  //   Serial.println("HM330X init failed!!!");
+  //   while (1)
+  //     ;
+  // }
   dht.begin();
   if (!bmp280.init())
   {
@@ -195,11 +195,11 @@ void swipebottomtotop(void)
 void loop()
 {
 
-  display.clearDisplay();
-  display.display();
-  display.setTextSize(1);              // Normal 1:1 pixel scale
-  display.setTextColor(SSD1306_WHITE); // Draw white text
-  display.setCursor(0, 0);             // Start at top-left corner
+  // display.clearDisplay();
+  // display.display();
+  // display.setTextSize(1);              // Normal 1:1 pixel scale
+  // display.setTextColor(SSD1306_WHITE); // Draw white text
+  // display.setCursor(0, 0);             // Start at top-left corner
 
 
   float temp;
@@ -208,11 +208,11 @@ void loop()
   Serial.print("temperature ");
   Serial.print(temp);
   Serial.println(" -1"); // -1 tells graphite to use time received
-  display.print(F("Temperature: "));
-  display.print(temp);
-  display.print(char(9));
-  display.println(F("C"));
-  display.display();
+  // display.print(F("Temperature: "));
+  // display.print(temp);
+  // display.print(char(9));
+  // display.println(F("C"));
+  // display.display();
   String theTemp = "Temp:" + String(temp, 0) + char(9) + "C";
   FORSCROLLINGGLOBAL[0] = theTemp;
   delay(1000);
@@ -223,10 +223,10 @@ void loop()
   humi = dht.readHumidity();
   Serial.print(humi);
   Serial.println(" -1"); // -1 tells graphite to use time received
-  display.print(F("Humidity: "));
-  display.print(humi);
-  display.println(F("%"));
-  display.display();
+  // display.print(F("Humidity: "));
+  // display.print(humi);
+  // display.println(F("%"));
+  // display.display();
   String theHumi = "Humi: " + String(humi, 0) + "%";
   FORSCROLLINGGLOBAL[1] = theHumi;
   delay(1000);
@@ -245,10 +245,10 @@ void loop()
   Serial.print("pressure ");
   Serial.print(pressure);
   Serial.println(" -1"); // -1 tells graphite to use time received
-  display.print(F("BP: "));
-  display.print(pressure);
-  display.println(F(" hPa"));
-  display.display();
+  // display.print(F("BP: "));
+  // display.print(pressure);
+  // display.println(F(" hPa"));
+  // display.display();
   String theBP = "BP:" + String(pressure,0) + "\nhPa";
   FORSCROLLINGGLOBAL[2] = theBP;
   delay(1000);
@@ -277,36 +277,36 @@ void loop()
   Serial.println(" -1"); // -1 tells graphite to use time received
   delay(1000);
 
-  if (dustSensor.read_sensor_value(dustSensorBuf, 29))
-  {
-    Serial.println("HM330X read result failed!!!");
-  }
-  dustSensorParseResultValue(dustSensorBuf);
-  dustSensorParsePrintResult(dustSensorBuf);
+  // if (dustSensor.read_sensor_value(dustSensorBuf, 29))
+  // {
+  //   Serial.println("HM330X read result failed!!!");
+  // }
+  // dustSensorParseResultValue(dustSensorBuf);
+  // dustSensorParsePrintResult(dustSensorBuf);
   delay(2000);
 
-  display.clearDisplay();
+  // display.clearDisplay();
 
-  swipetoptobottom();
-  delay(1000);
-  display.clearDisplay();
+  // swipetoptobottom();
+  // delay(1000);
+  // display.clearDisplay();
 
-  display.setTextSize(2); // Draw 2X-scale text
-  display.setTextColor(SSD1306_WHITE);
-  display.setCursor(0,0);
-  display.setTextWrap(true);
-  int toScrollIndex = random(3);
-  display.setCursor(0,0);
-  if (toScrollIndex < 2) {
-    display.setCursor(10,11);
-  } 
-  display.println(FORSCROLLINGGLOBAL[toScrollIndex]);
-  display.display(); // Show initial text
-  delay(100);
-  display.startscrollleft(0x00, 0x07);
+  // display.setTextSize(2); // Draw 2X-scale text
+  // display.setTextColor(SSD1306_WHITE);
+  // display.setCursor(0,0);
+  // display.setTextWrap(true);
+  // int toScrollIndex = random(3);
+  // display.setCursor(0,0);
+  // if (toScrollIndex < 2) {
+  //   display.setCursor(10,11);
+  // } 
+  // display.println(FORSCROLLINGGLOBAL[toScrollIndex]);
+  // display.display(); // Show initial text
+  // delay(100);
+  // display.startscrollleft(0x00, 0x07);
   delay(15000); /*15s*/
-  display.stopscroll();
-  display.clearDisplay();
-  swipebottomtotop();
-  display.clearDisplay();
+  // display.stopscroll();
+  // display.clearDisplay();
+  // swipebottomtotop();
+  // display.clearDisplay();
 }
