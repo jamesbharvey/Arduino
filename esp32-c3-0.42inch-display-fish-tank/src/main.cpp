@@ -55,10 +55,12 @@ void setup(void)
 
   delay(1000);
   u8g2.begin();
+  u8g2.enableUTF8Print();		// enable UTF8 support for the Arduino print()
   u8g2.setContrast(255);    // set contrast to maximum
   u8g2.setBusClock(400000); // 400kHz I2C
-  u8g2.setFont(u8g2_font_ncenB24_tr);
-  //    u8g2.setFont(u8g2_font_helvR24_tf);
+  //u8g2.setFont(u8g2_font_ncenB24_tr);
+  //u8g2.setFont(u8x8_font_8x13B_1x2_f);
+  u8g2.setFont(u8g2_font_helvR24_tf);
 }
 
 void sendUDP(float temperature)
