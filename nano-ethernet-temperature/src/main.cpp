@@ -4,12 +4,10 @@
 #include <SPI.h>
 #include <UIPEthernet.h>
 
+#define UDP_TX_PACKET_MAX_SIZE 100 //increase UDP size
+
 // DEADBEEFFEED!
 byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
-
-
-
-
 
 // Define to which pin of the Arduino the 1-Wire bus is connected:
 #define ONE_WIRE_BUS 6
@@ -19,6 +17,23 @@ OneWire oneWire(ONE_WIRE_BUS);
 
 // Pass the oneWire reference to DallasTemperature library:
 DallasTemperature sensors(&oneWire);
+
+
+#define UDP_PORT 2004 // graphite udp is 2003, we use 2004
+EthernetUDP Udp;
+
+IPAddress destinationIp(192, 168, 11, 23);
+
+void sendUDP(String inString)
+{
+  Serial.println("Sending UDP message " + inString);
+  Udp.beginPacket(destinationIp, UDP_PORT);
+  Udp.write(inString.c_str());
+  Udp.write('\n');
+  Udp.endPacket();
+}
+
+
 
 void setup() {
   Serial.begin(9600);
@@ -75,12 +90,18 @@ void loop() {
   Serial.print(" \xC2\xB0"); // shows degree symbol
   Serial.print("C  |  ");
 
+  String graphiteMessage = "mysensors.livingroom.fishtank.temperature ";
+  graphiteMessage += String(tempC);
+  graphiteMessage += " -1";
+
+  sendUDP(graphiteMessage);
+
   // Print the temperature in Fahrenheit
   Serial.print(tempF);
   Serial.print(" \xC2\xB0"); // shows degree symbol
   Serial.println("F");
-  // Wait 1 second:
-  delay(1000);
+  // Wait 120 second:
+  delay(120 * 1000);
 
 }
 
