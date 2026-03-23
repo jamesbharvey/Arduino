@@ -2,7 +2,7 @@
 #include<OneWire.h>
 #include "DallasTemperature.h"
 #include <SPI.h>
-#include <Ethernet.h>
+#include <UIPEthernet.h>
 
 // DEADBEEFFEED!
 byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
@@ -12,7 +12,7 @@ byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
 
 
 // Define to which pin of the Arduino the 1-Wire bus is connected:
-#define ONE_WIRE_BUS 10
+#define ONE_WIRE_BUS 6
 
 // Create a new instance of the oneWire class to communicate with any OneWire device:
 OneWire oneWire(ONE_WIRE_BUS);
@@ -26,8 +26,11 @@ void setup() {
 
   // initialize the Ethernet shield using DHCP:
    if (Ethernet.begin(mac) == 0) {
-    Serial.println("Failed to obtaining an IP address");
-
+    while (true) {
+      Serial.println("Failed to obtain an IP address");
+      delay(1000);
+    }
+   }
     // check for Ethernet hardware present
     //if (Ethernet.hardwareStatus() == EthernetNoHardware)
     //  Serial.println("Ethernet shield was not found");
@@ -39,57 +42,24 @@ void setup() {
       Serial.println("Ethernet cable is not connected.");
       delay(1000);
     };
-  }
   
   Serial.println("start");
   Serial.print("Arduino's IP Address: ");
   Serial.println(Ethernet.localIP());
 
-  // Serial.print("DNS Server's IP Address: ");
-  // Serial.println(Ethernet.dnsServerIP());
+  Serial.print("DNS Server's IP Address: ");
+  Serial.println(Ethernet.dnsServerIP());
 
-  // Serial.print("Gateway's IP Address: ");
-  // Serial.println(Ethernet.gatewayIP());
+  Serial.print("Gateway's IP Address: ");
+  Serial.println(Ethernet.gatewayIP());
 
-  // Serial.print("Network's Subnet Mask: ");
-  // Serial.println(Ethernet.subnetMask());
+  Serial.print("Network's Subnet Mask: ");
+  Serial.println(Ethernet.subnetMask());
 }
 
 
 void loop() {
 
- /*  byte data[12];
-// 温度データを格納する配列
-float celsius;
-// 温度（摂氏）を格納する変数
-
-ds.reset();
-// バスをリセット
-ds.select(addr);
-// アドレス指定（複数センサがある場合に識別）
-ds.write(0x44, 1);
-// 温度変換開始コマンドを送信
-delay(750);
-// 12bit精度では変換に最大750msかかる
-
-ds.reset();
-ds.select(addr);
-ds.write(0xBE);
-// スクラッチパッド（温度データ格納領域）読み出しコマンド
-
-for (byte i = 0; i < 9; i++) {
-data[i] = ds.read();
-// 9バイト分のデータを順に読み出す
-}
-
-int16_t raw = (data[1] << 8) | data[0];
-// 上位バイトと下位バイトを結合
-celsius = (float)raw / 16.0;
-// 16で割ることで摂氏温度に変換
-
-Serial.print("Temp= ");
-Serial.println(celsius);
-// 温度をシリアルモニタに出力 */
  Serial.println("Hello world");
   // Send the command for all devices on the bus to perform a temperature conversion:
   sensors.requestTemperatures();

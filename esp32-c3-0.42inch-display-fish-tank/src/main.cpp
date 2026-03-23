@@ -68,7 +68,7 @@ void sendUDP(float temperature)
   Serial.println("Sending UDP message");
   Udp.beginPacket(destinationIp, UDP_PORT);
   char whisper_message[50];
-  sprintf(whisper_message, "mysensors.livingroom.fishtank.temperature %0.2f -1\n", temperature);
+  sprintf(whisper_message, "mysensors.kitchen.fishtank.temperature %0.2f -1\n", temperature);
   Udp.write((uint8_t *)whisper_message, strlen(whisper_message));
   Udp.endPacket();
 }
