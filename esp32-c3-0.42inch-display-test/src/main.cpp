@@ -13,7 +13,8 @@ int yOffset = 24; //(64-height)/2;
 
 void setup(void)
 {
-     delay(1000);
+    Serial.begin(9600);
+    delay(1000);
      u8g2.begin();
      u8g2.setContrast(255); // set contrast to maximum 
      u8g2.setBusClock(400000); //400kHz I2C 
@@ -28,4 +29,7 @@ void loop(void)
     u8g2.setCursor(xOffset+4, yOffset+30);
     u8g2.printf("%dC", width);
     u8g2.sendBuffer(); 
+    Serial.println("hello");
+    sleep(2);
+    
 }

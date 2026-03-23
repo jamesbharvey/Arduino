@@ -31,8 +31,8 @@ const char* password = "r6ju8tjjtnup5";
 #define PART_BOUNDARY "123456789000000000000987654321"
 
 // This project was tested with the AI Thinker Model, M5STACK PSRAM Model and M5STACK WITHOUT PSRAM
-#define CAMERA_MODEL_AI_THINKER
-//#define CAMERA_MODEL_M5STACK_PSRAM
+//#define CAMERA_MODEL_AI_THINKER
+#define CAMERA_MODEL_M5STACK_PSRAM
 //#define CAMERA_MODEL_M5STACK_WITHOUT_PSRAM
 
 // Not tested with this model
@@ -177,7 +177,7 @@ static esp_err_t stream_handler(httpd_req_t *req){
     if(res != ESP_OK){
       break;
     }
-    //Serial.printf("MJPG: %uB\n",(uint32_t)(_jpg_buf_len));
+    Serial.printf("MJPG: %uB\n",(uint32_t)(_jpg_buf_len));
   }
   return res;
 }
@@ -193,13 +193,16 @@ void startCameraServer(){
     .user_ctx  = NULL
   };
   
-  //Serial.printf("Starting web server on port: '%d'\n", config.server_port);
+  Serial.printf("Starting web server on port: '%d'\n", config.server_port);
   if (httpd_start(&stream_httpd, &config) == ESP_OK) {
     httpd_register_uri_handler(stream_httpd, &index_uri);
   }
 }
 
 void setup() {
+   while (true) {
+    Serial.println("I am alive.... ");
+  }
   WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0); //disable brownout detector
  
   Serial.begin(115200);
@@ -260,5 +263,13 @@ void setup() {
 }
 
 void loop() {
+   while (true) {
+    Serial.println("I am alive.... ");
+  }
   delay(1);
 }
+ int main() {
+  while (true) {
+    Serial.println("I am alive.... ");
+  }
+ }

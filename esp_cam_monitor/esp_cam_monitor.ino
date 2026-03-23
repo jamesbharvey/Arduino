@@ -1,3 +1,6 @@
+#include <ESP32_OV5640_AF.h>
+#include <ESP32_OV5640_cfg.h>
+
 /*********
   Rui Santos
   Complete project details at https://RandomNerdTutorials.com/esp32-cam-video-streaming-web-server-camera-home-assistant/
@@ -14,7 +17,7 @@
   copies or substantial portions of the Software.
 *********/
 
-#include "esp_camera.h"
+//#include "esp_camera.h"
 #include <WiFi.h>
 #include "esp_timer.h"
 #include "img_converters.h"
@@ -202,7 +205,7 @@ void startCameraServer(){
 void setup() {
   WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0); //disable brownout detector
  
-  Serial.begin(115200);
+  Serial.begin(9600);
   Serial.setDebugOutput(false);
   
   camera_config_t config;
@@ -260,5 +263,6 @@ void setup() {
 }
 
 void loop() {
+  Serial.println(WiFi.localIP());
   delay(1);
 }
