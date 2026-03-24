@@ -1,13 +1,13 @@
 #include <Arduino.h>
-#include<OneWire.h>
+#include <OneWire.h>
 #include "DallasTemperature.h"
 #include <SPI.h>
 #include <UIPEthernet.h>
 
 #define UDP_TX_PACKET_MAX_SIZE 100 //increase UDP size
 
-// DEADBEEFFEED!
-byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
+// DEAD DEAD DEAD! because everyone else uses DEADBEEFFEED
+byte mac[] = { 0xDE, 0xAD, 0xDE, 0xAD, 0xDE, 0xAD };
 
 // Define to which pin of the Arduino the 1-Wire bus is connected:
 #define ONE_WIRE_BUS 6
@@ -23,6 +23,7 @@ DallasTemperature sensors(&oneWire);
 EthernetUDP Udp;
 
 IPAddress destinationIp(192, 168, 11, 23);
+IPAddress ip(192, 168, 11, 249);
 
 void sendUDP(String inString)
 {
@@ -33,31 +34,17 @@ void sendUDP(String inString)
   Udp.endPacket();
 }
 
-
-
 void setup() {
   Serial.begin(9600);
   sensors.begin();
-
-  // initialize the Ethernet shield using DHCP:
-   if (Ethernet.begin(mac) == 0) {
-    while (true) {
-      Serial.println("Failed to obtain an IP address");
-      delay(1000);
-    }
-   }
-    // check for Ethernet hardware present
-    //if (Ethernet.hardwareStatus() == EthernetNoHardware)
-    //  Serial.println("Ethernet shield was not found");
-
-    // check for Ethernet cable
-    if (Ethernet.linkStatus() == LinkOFF)
-      
-    while (true) {
-      Serial.println("Ethernet cable is not connected.");
-      delay(1000);
-    };
-  
+  // initialize the Ethernet shield using DHCPp
+  //  if (Ethernet.begin(mac) == 0) {
+  //   while (true) {
+  //     Serial.println("Failed to obtain an IP address");
+  //     delay(1000);
+  //   }
+  //  }
+  Ethernet.begin(mac,ip);
   Serial.println("start");
   Serial.print("Arduino's IP Address: ");
   Serial.println(Ethernet.localIP());
@@ -100,8 +87,8 @@ void loop() {
   Serial.print(tempF);
   Serial.print(" \xC2\xB0"); // shows degree symbol
   Serial.println("F");
-  // Wait 120 second:
-  delay(120 * 1000);
+  // Wait 15 second:
+  delay(15 * 1000);
 
 }
 
